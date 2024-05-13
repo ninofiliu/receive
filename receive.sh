@@ -1,2 +1,3 @@
 #!/bin/sh
-deno run -A main.ts
+cd $(dirname $(readlink $0))
+deno run -A ./main.ts

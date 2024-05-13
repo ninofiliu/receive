@@ -7,10 +7,12 @@ Deno.serve(
     port,
     hostname: address,
     onListen: async () => {
+      const href = `http://${address}:${port}`;
       const cmd = new Deno.Command("qrcode", {
-        args: [`http://${address}:${port}`],
+        args: [href],
       });
       const output = await cmd.output();
+      console.log(`Listening at ${href}`);
       Deno.stdout.write(output.stdout);
     },
   },
@@ -23,9 +25,16 @@ Deno.serve(
         return new Response(page.readable);
       }
       case "POST /upload": {
+        console.log(`Uploading files to ${Deno.cwd()}/uploads...`);
         const formData = await req.formData();
-        const file = formData.get("file") as File;
-        await Deno.writeFile(`./uploads/${file.name}`, file.stream());
+        const files = formData.getAll("file") as File[];
+        await Promise.all(
+          files.map(async (file) => {
+            await Deno.writeFile(`./uploads/${file.name}`, file.stream());
+            console.log(`Uploaded ${Deno.cwd()}/uploads/${file.name}`);
+          })
+        );
+        console.log(`Uploaded ${files.length} files`);
         const page = await Deno.open("./ok.html");
         return new Response(page.readable);
       }
