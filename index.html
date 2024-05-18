@@ -6,9 +6,31 @@
     <title>Document</title>
   </head>
   <body>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-      <input type="file" name="file" multiple />
-      <button type="submit">send</button>
-    </form>
+    <input type="file" multiple />
+    <p></p>
+    <script>
+      const input = document.querySelector("input");
+      const p = document.querySelector("p");
+      const log = (msg) => (p.textContent = msg);
+      input.addEventListener("change", async () => {
+        const files = [...(input.files ?? [])];
+        log(`Uploading ${files.length} files...`);
+        let nbUploaded = 0;
+        await Promise.all(
+          files.map(async (file) => {
+            const url = new URL(location);
+            url.pathname = "/upload";
+            url.searchParams.set("name", file.name);
+            await fetch(url, {
+              method: "POST",
+              body: file,
+            });
+            nbUploaded++;
+            log(`Uploaded file ${nbUploaded}/${files.length} (${file.name})`);
+          })
+        );
+        log(`${files.length} files uploaded`);
+      });
+    </script>
   </body>
 </html>

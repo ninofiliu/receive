@@ -25,16 +25,12 @@ Deno.serve(
         return new Response(page.readable);
       }
       case "POST /upload": {
-        console.log(`Uploading files to ${Deno.cwd()}/uploads...`);
-        const formData = await req.formData();
-        const files = formData.getAll("file") as File[];
-        await Promise.all(
-          files.map(async (file) => {
-            await Deno.writeFile(`./uploads/${file.name}`, file.stream());
-            console.log(`Uploaded ${Deno.cwd()}/uploads/${file.name}`);
-          })
-        );
-        console.log(`Uploaded ${files.length} files`);
+        if (req.body) {
+          await Deno.writeFile(
+            `./uploads/${url.searchParams.get("name")}`,
+            req.body
+          );
+        }
         const page = await Deno.open("./ok.html");
         return new Response(page.readable);
       }
