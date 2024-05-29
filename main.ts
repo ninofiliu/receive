@@ -1,3 +1,5 @@
+import { resolve } from "https://deno.land/std@0.224.0/path/resolve.ts";
+
 const port = 8080;
 const { address } = Deno.networkInterfaces().find(
   (int) => int.name === "wlo1"
@@ -25,12 +27,14 @@ Deno.serve(
         return new Response(page.readable);
       }
       case "POST /upload": {
-        if (req.body) {
-          await Deno.writeFile(
-            `./uploads/${url.searchParams.get("name")}`,
-            req.body
-          );
-        }
+        if (!req.body)
+          return new Response("should post a file", { status: 400 });
+        const path = resolve(
+          Deno.cwd(),
+          `./uploads/${url.searchParams.get("name")}`
+        );
+        await Deno.writeFile(path, req.body);
+        console.log(`received ${path}`);
         const page = await Deno.open("./ok.html");
         return new Response(page.readable);
       }
